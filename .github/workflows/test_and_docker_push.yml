@@ -1,0 +1,25 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker login -u ${{ secrets.DOCKER_ID }} -p ${{ secrets.DOCKER_PASSWORD }}
+      - run: docker build -t mavanis/react-test -f ./client/Dockerfile.dev ./client
+      - run: docker run -e CI=true cygnetops/react-test npm test
+ 
+      - run: docker build -t mavanis/multi-client ./client
+      - run: docker build -t mavanis/multi-nginx ./nginx
+      - run: docker build -t mavanis/multi-server ./server
+      - run: docker build -t mavanis/multi-worker ./worker
+ 
+      - run: docker push mavanis/multi-client
+      - run: docker push mavanis/multi-nginx
+      - run: docker push mavanis/multi-server
+      - run: docker push mavanis/multi-worker
+      
